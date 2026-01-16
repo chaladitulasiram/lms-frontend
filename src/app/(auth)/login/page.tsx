@@ -31,10 +31,13 @@ export default function LoginPage() {
         try {
             const res = await api.post('/auth/login', { email, password });
             const accessToken = res.data.access_token;
-            localStorage.setItem('token', accessToken);
+            const user = res.data.user;
 
-            const payload = JSON.parse(atob(accessToken.split('.')[1]));
-            const role = payload.role;
+            // Store both token and user info
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('user', JSON.stringify(user));
+
+            const role = user.role;
 
             if (role === 'ADMIN') router.push('/admin');
             else if (role === 'MENTOR') router.push('/mentor');

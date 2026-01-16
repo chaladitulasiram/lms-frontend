@@ -3,11 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import AIChatbot from '@/components/AIChatbot';
+
+interface User {
+    id: string;
+    email: string;
+    name: string | null;
+    phone: string | null;
+    designation: string | null;
+    role: string;
+    avatar: string | null;
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const [role, setRole] = useState<string | null>(null);
-    const [email, setEmail] = useState<string>('');
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
@@ -17,16 +27,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            setRole(payload.role);
-            setEmail(payload.email || 'User');
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                setUser(JSON.parse(userStr));
+            } else {
+                // Fallback to JWT payload if user not in localStorage
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                setUser({
+                    id: payload.sub,
+                    email: payload.email,
+                    name: payload.name || null,
+                    phone: null,
+                    designation: null,
+                    role: payload.role,
+                    avatar: null,
+                });
+            }
         } catch (e) {
             localStorage.removeItem('token');
+            localStorage.removeItem('user');
             router.push('/login');
         }
     }, [router]);
 
-    if (!role) return (
+    if (!user) return (
         <div className="flex items-center justify-center h-screen bg-[hsl(222,47%,6%)]">
             <div className="text-center">
                 <div className="relative w-16 h-16 mx-auto mb-4">
@@ -44,7 +68,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         STUDENT: { icon: '🎓', label: 'Student', gradient: 'from-[hsl(190,95%,50%)] to-[hsl(280,70%,55%)]' }
     };
 
-    const config = roleConfig[role as keyof typeof roleConfig] || roleConfig.STUDENT;
+    const config = roleConfig[user.role as keyof typeof roleConfig] || roleConfig.STUDENT;
+
+    // Get display name
+    const displayName = user.name || user.email.split('@')[0];
+    const designation = user.designation || config.label;
 
     return (
         <div className="flex h-screen bg-[hsl(222,47%,6%)] overflow-hidden">
@@ -73,16 +101,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-xs text-gray-500 ml-12">Learning Management System</p>
                 </div>
 
-                {/* User Profile */}
-                <div className={`relative overflow-hidden bg-gradient-to-r ${config.gradient} p-5 rounded-2xl mb-8 glow group`}>
+                {/* User Profile Card */}
+                <div className={`relative overflow-hidden bg-gradient-to-r ${config.gradient} p-5 rounded-2xl mb-8 glow group cursor-pointer`}>
                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                     <div className="relative flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full glass flex items-center justify-center text-2xl border-2 border-white/30">
-                            {config.icon}
+                        {/* Avatar */}
+                        <div className="relative">
+                            <div className="w-14 h-14 rounded-full glass flex items-center justify-center text-2xl border-2 border-white/30 bg-white/10 font-bold text-white">
+                                {user.avatar ? (
+                                    <img src={user.avatar} alt={displayName} className="w-full h-full rounded-full object-cover" />
+                                ) : (
+                                    displayName.charAt(0).toUpperCase()
+                                )}
+                            </div>
+                            {/* Online Indicator */}
+                            <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-400 rounded-full border-2 border-[hsl(222,47%,6%)] animate-pulse"></div>
                         </div>
+
+                        {/* User Info */}
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-white truncate">{email}</p>
-                            <p className="text-xs text-white/80">{config.label} Account</p>
+                            <p className="text-base font-bold text-white truncate">{displayName}</p>
+                            <p className="text-xs text-white/90 truncate">{designation}</p>
+                            {user.phone && (
+                                <p className="text-xs text-white/70 truncate mt-0.5">📞 {user.phone}</p>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -90,7 +132,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Navigation */}
                 <nav className="space-y-2 flex-1">
                     {/* Admin Links */}
-                    {role === 'ADMIN' && (
+                    {user.role === 'ADMIN' && (
                         <>
                             <Link
                                 href="/admin"
@@ -103,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     )}
 
                     {/* Mentor Links */}
-                    {role === 'MENTOR' && (
+                    {user.role === 'MENTOR' && (
                         <>
                             <Link
                                 href="/mentor"
@@ -116,7 +158,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     )}
 
                     {/* Student Links */}
-                    {role === 'STUDENT' && (
+                    {user.role === 'STUDENT' && (
                         <>
                             <Link
                                 href="/student"
@@ -131,7 +173,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {/* Logout Button */}
                 <button
-                    onClick={() => { localStorage.removeItem('token'); router.push('/login'); }}
+                    onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        router.push('/login');
+                    }}
                     className="flex items-center gap-4 w-full p-4 glass hover:bg-red-500/10 rounded-xl transition-cyber mt-auto group border border-red-400/30 hover:border-red-400/50"
                 >
                     <span className="text-2xl group-hover:scale-110 transition-cyber">🚪</span>
@@ -145,6 +191,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {children}
                 </div>
             </main>
+
+            {/* AI Chatbot */}
+            <AIChatbot userRole={user.role} />
         </div>
     );
 }

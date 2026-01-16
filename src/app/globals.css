@@ -44,7 +44,7 @@ h6 {
     text-wrap: balance;
   }
 
-  /* Floating Animation */
+  /* Enhanced Animations */
   @keyframes float {
 
     0%,
@@ -77,6 +77,30 @@ h6 {
 
     to {
       transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
       opacity: 1;
     }
   }
@@ -183,6 +207,61 @@ h6 {
     }
   }
 
+  @keyframes wiggle {
+
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+
+  @keyframes heartbeat {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    25% {
+      transform: scale(1.1);
+    }
+
+    50% {
+      transform: scale(1);
+    }
+
+    75% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes gradient-shift {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* Animation Classes */
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -193,6 +272,14 @@ h6 {
 
   .animate-slideIn {
     animation: slideIn 0.5s ease-out;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.5s ease-out;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.5s ease-out;
   }
 
   .animate-pulse-slow {
@@ -223,6 +310,23 @@ h6 {
     animation: confetti 3s ease-out forwards;
   }
 
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
+
+  .animate-rotate {
+    animation: rotate 20s linear infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
   /* Glassmorphism */
   .glass {
     background: rgba(255, 255, 255, 0.05);
@@ -245,6 +349,11 @@ h6 {
     box-shadow: 0 0 20px rgba(0, 229, 255, 0.5),
       0 0 40px rgba(0, 229, 255, 0.3),
       0 0 60px rgba(0, 229, 255, 0.1);
+  }
+
+  .glow-sm {
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.4),
+      0 0 20px rgba(0, 229, 255, 0.2);
   }
 
   .glow-text {
@@ -292,6 +401,30 @@ h6 {
     border-color: rgba(0, 229, 255, 0.5);
   }
 
+  /* Button Hover Effects */
+  .btn-hover {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-hover::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .btn-hover:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
   /* Smooth Transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -322,6 +455,14 @@ h6 {
       0 0 20px rgba(0, 229, 255, 0.1);
   }
 
+  /* Loading Spinner */
+  .spinner {
+    border: 3px solid rgba(0, 229, 255, 0.1);
+    border-top-color: hsl(190, 95%, 50%);
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+  }
+
   /* Scrollbar Styling */
   ::-webkit-scrollbar {
     width: 10px;
@@ -348,5 +489,20 @@ h6 {
     background: hsl(190, 95%, 50%);
     border-radius: 50%;
     box-shadow: 0 0 10px hsl(190, 95%, 50%);
+  }
+
+  /* Hover Lift Effect */
+  .hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 229, 255, 0.3);
+  }
+
+  /* Success Pulse */
+  .success-pulse {
+    animation: heartbeat 0.8s ease-in-out 2;
   }
 }

@@ -10,6 +10,7 @@ interface Module {
     id: string;
     title: string;
     content: string;
+    videoUrl?: string | null;
 }
 
 interface CourseDetail {
@@ -18,6 +19,26 @@ interface CourseDetail {
     description: string;
     modules: Module[];
     mentor: { email: string };
+}
+
+// Helper function to extract YouTube video ID from URL
+function getYouTubeVideoId(url: string): string | null {
+    if (!url) return null;
+
+    // Handle different YouTube URL formats
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+        /youtube\.com\/embed\/([^&\n?#]+)/,
+    ];
+
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+
+    return null;
 }
 
 export default function CoursePlayerPage() {
@@ -33,6 +54,11 @@ export default function CoursePlayerPage() {
         },
     });
 
+    // Auto-select first module when course loads
+    if (course && !activeModule && course.modules.length > 0) {
+        setActiveModule(course.modules[0]);
+    }
+
     if (isLoading) return (
         <div className="flex h-screen items-center justify-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-[hsl(190,95%,50%)] border-t-transparent"></div>
@@ -45,6 +71,8 @@ export default function CoursePlayerPage() {
             <Link href="/student" className="text-[hsl(190,95%,50%)] hover:underline mt-4 block">← Return to Catalog</Link>
         </div>
     );
+
+    const videoId = activeModule?.videoUrl ? getYouTubeVideoId(activeModule.videoUrl) : null;
 
     return (
         <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] gap-6">
@@ -70,8 +98,8 @@ export default function CoursePlayerPage() {
                             key={mod.id}
                             onClick={() => setActiveModule(mod)}
                             className={`w-full text-left p-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${activeModule?.id === mod.id
-                                    ? 'bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white shadow-md glow'
-                                    : 'hover:bg-[hsl(190,95%,50%)]/10 text-gray-300'
+                                ? 'bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white shadow-md glow'
+                                : 'hover:bg-[hsl(190,95%,50%)]/10 text-gray-300'
                                 }`}
                         >
                             <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${activeModule?.id === mod.id ? 'bg-white text-[hsl(190,95%,50%)]' : 'bg-[hsl(190,95%,50%)]/20 text-[hsl(190,95%,50%)]'
@@ -79,6 +107,11 @@ export default function CoursePlayerPage() {
                                 {idx + 1}
                             </span>
                             <span className="font-medium text-sm truncate">{mod.title}</span>
+                            {mod.videoUrl && (
+                                <svg className="w-4 h-4 ml-auto flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
+                            )}
                         </button>
                     ))}
                 </div>
@@ -92,15 +125,41 @@ export default function CoursePlayerPage() {
                             <h1 className="text-3xl font-bold text-white font-display">{activeModule.title}</h1>
                         </div>
 
-                        {/* Simulated Video Player */}
+                        {/* Video Player */}
                         <div className="aspect-video bg-gradient-to-br from-[hsl(190,95%,50%)]/10 to-[hsl(260,80%,60%)]/10 rounded-xl mb-8 flex items-center justify-center relative group overflow-hidden border border-[hsl(190,95%,50%)]/20">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(190,95%,50%)]/20 to-[hsl(260,80%,60%)]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                            <div className="text-center z-10">
-                                <div className="w-20 h-20 bg-[hsl(190,95%,50%)]/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 mx-auto border border-[hsl(190,95%,50%)]/30 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:bg-[hsl(190,95%,50%)]/30 glow">
-                                    <svg className="w-8 h-8 text-[hsl(190,95%,50%)] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                            {videoId ? (
+                                <iframe
+                                    className="absolute inset-0 w-full h-full rounded-xl"
+                                    src={`https://www.youtube.com/embed/${videoId}`}
+                                    title={activeModule.title}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            ) : activeModule.videoUrl ? (
+                                <div className="text-center z-10">
+                                    <div className="text-4xl mb-4">🎥</div>
+                                    <p className="text-gray-400 text-sm mb-2">Video URL provided</p>
+                                    <a
+                                        href={activeModule.videoUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[hsl(190,95%,50%)] hover:underline text-sm"
+                                    >
+                                        Open Video Link
+                                    </a>
                                 </div>
-                                <p className="text-gray-400 text-sm font-mono tracking-wider">VIDEO PREVIEW</p>
-                            </div>
+                            ) : (
+                                <>
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(190,95%,50%)]/20 to-[hsl(260,80%,60%)]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                                    <div className="text-center z-10">
+                                        <div className="w-20 h-20 bg-[hsl(190,95%,50%)]/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 mx-auto border border-[hsl(190,95%,50%)]/30 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:bg-[hsl(190,95%,50%)]/30 glow">
+                                            <svg className="w-8 h-8 text-[hsl(190,95%,50%)] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                        </div>
+                                        <p className="text-gray-400 text-sm font-mono tracking-wider">NO VIDEO AVAILABLE</p>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Text Content */}
@@ -109,6 +168,41 @@ export default function CoursePlayerPage() {
                             <div className="glass p-6 rounded-xl border border-[hsl(190,95%,50%)]/20 text-gray-300 leading-relaxed whitespace-pre-wrap">
                                 {activeModule.content}
                             </div>
+                        </div>
+
+                        {/* Navigation Buttons */}
+                        <div className="flex justify-between mt-8 pt-6 border-t border-[hsl(190,95%,50%)]/20">
+                            <button
+                                onClick={() => {
+                                    const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
+                                    if (currentIndex > 0) {
+                                        setActiveModule(course.modules[currentIndex - 1]);
+                                    }
+                                }}
+                                disabled={course.modules.findIndex(m => m.id === activeModule.id) === 0}
+                                className="px-6 py-3 glass rounded-xl border border-[hsl(190,95%,50%)]/30 hover:bg-[hsl(190,95%,50%)]/10 hover:border-[hsl(190,95%,50%)]/50 text-[hsl(190,95%,50%)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                                Previous Lesson
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
+                                    if (currentIndex < course.modules.length - 1) {
+                                        setActiveModule(course.modules[currentIndex + 1]);
+                                    }
+                                }}
+                                disabled={course.modules.findIndex(m => m.id === activeModule.id) === course.modules.length - 1}
+                                className="px-6 py-3 bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white rounded-xl font-bold glow hover:scale-[1.02] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+                            >
+                                Next Lesson
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 ) : (

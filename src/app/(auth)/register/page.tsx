@@ -11,6 +11,9 @@ export default function RegisterPage() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
+        name: '',
+        phone: '',
+        designation: '',
         role: 'STUDENT',
     });
     const [error, setError] = useState('');
@@ -82,7 +85,7 @@ export default function RegisterPage() {
                 ))}
             </div>
 
-            <div className="w-full max-w-lg relative z-10">
+            <div className="w-full max-w-2xl relative z-10">
                 {/* Card */}
                 <div className="glass-dark p-10 rounded-3xl border border-[hsl(190,95%,50%)]/30 elevated">
                     {/* Header */}
@@ -109,9 +112,33 @@ export default function RegisterPage() {
                         </div>
                     )}
 
-                    <form onSubmit={handleRegister} className="space-y-6">
+                    <form onSubmit={handleRegister} className="space-y-5">
+                        {/* Name Field */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-3">Email Address</label>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[hsl(190,95%,50%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Full Name
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full px-4 py-3 glass border border-[hsl(190,95%,50%)]/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[hsl(190,95%,50%)] focus:border-transparent transition-smooth bg-black/20"
+                                placeholder="John Doe"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Email Field */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[hsl(190,95%,50%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Email Address
+                            </label>
                             <input
                                 type="email"
                                 required
@@ -121,8 +148,51 @@ export default function RegisterPage() {
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             />
                         </div>
+
+                        {/* Phone Field */}
                         <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-3">Password</label>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[hsl(260,80%,60%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                Phone Number
+                                <span className="text-xs text-gray-500">(Optional)</span>
+                            </label>
+                            <input
+                                type="tel"
+                                className="w-full px-4 py-3 glass border border-[hsl(190,95%,50%)]/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[hsl(260,80%,60%)] focus:border-transparent transition-smooth bg-black/20"
+                                placeholder="+1 (555) 123-4567"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Designation Field */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[hsl(280,70%,55%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Designation / Title
+                                <span className="text-xs text-gray-500">(Optional)</span>
+                            </label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-3 glass border border-[hsl(190,95%,50%)]/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[hsl(280,70%,55%)] focus:border-transparent transition-smooth bg-black/20"
+                                placeholder="Software Engineer, Student, etc."
+                                value={formData.designation}
+                                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Password Field */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[hsl(190,95%,50%)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Password
+                            </label>
                             <input
                                 type="password"
                                 required
@@ -132,6 +202,8 @@ export default function RegisterPage() {
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             />
                         </div>
+
+                        {/* Role Selection */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-300 mb-4">I am a...</label>
                             <div className="grid grid-cols-1 gap-3">
@@ -165,6 +237,7 @@ export default function RegisterPage() {
                                 ))}
                             </div>
                         </div>
+
                         <button
                             type="submit"
                             disabled={loading}
