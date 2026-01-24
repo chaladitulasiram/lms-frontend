@@ -5,6 +5,10 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/axios';
 import Link from 'next/link';
+import { Play, FileText, ChevronLeft, ChevronRight, Lock, CheckCircle2 } from 'lucide-react';
+import { GlassCard } from '@/components/ui/glass/GlassCard';
+import { GlassButton } from '@/components/ui/glass/GlassButton';
+import { PageHeader } from '@/components/ui/glass/PageHeader';
 
 interface Module {
     id: string;
@@ -61,157 +65,171 @@ export default function CoursePlayerPage() {
 
     if (isLoading) return (
         <div className="flex h-screen items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[hsl(190,95%,50%)] border-t-transparent"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/20 border-t-white"></div>
         </div>
     );
 
     if (error || !course) return (
         <div className="p-10 text-center">
             <h2 className="text-2xl font-bold text-red-500">Course not found</h2>
-            <Link href="/student" className="text-[hsl(190,95%,50%)] hover:underline mt-4 block">← Return to Catalog</Link>
+            <Link href="/student" className="text-blue-400 hover:text-white mt-4 block">← Return to Catalog</Link>
         </div>
     );
 
     const videoId = activeModule?.videoUrl ? getYouTubeVideoId(activeModule.videoUrl) : null;
 
     return (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-100px)] gap-6">
-            {/* Sidebar: Module List */}
-            <div className="w-full lg:w-80 glass border border-[hsl(190,95%,50%)]/20 rounded-2xl flex flex-col overflow-hidden elevated">
-                <div className="p-6 border-b border-[hsl(190,95%,50%)]/20">
-                    <Link href="/student" className="text-xs text-gray-400 hover:text-[hsl(190,95%,50%)] mb-2 block font-medium">
-                        ← Back to Catalog
-                    </Link>
-                    <h2 className="font-bold text-lg text-white leading-tight">{course.title}</h2>
-                    <p className="text-xs text-gray-400 mt-1">Mentor: {course.mentor.email}</p>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-2 space-y-1">
-                    {course.modules.length === 0 && (
-                        <div className="p-8 text-center text-gray-400 text-sm">
-                            No lessons have been uploaded yet.
-                        </div>
-                    )}
-
-                    {course.modules.map((mod, idx) => (
-                        <button
-                            key={mod.id}
-                            onClick={() => setActiveModule(mod)}
-                            className={`w-full text-left p-3 rounded-xl transition-all duration-200 flex items-center gap-3 ${activeModule?.id === mod.id
-                                ? 'bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white shadow-md glow'
-                                : 'hover:bg-[hsl(190,95%,50%)]/10 text-gray-300'
-                                }`}
-                        >
-                            <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${activeModule?.id === mod.id ? 'bg-white text-[hsl(190,95%,50%)]' : 'bg-[hsl(190,95%,50%)]/20 text-[hsl(190,95%,50%)]'
-                                }`}>
-                                {idx + 1}
-                            </span>
-                            <span className="font-medium text-sm truncate">{mod.title}</span>
-                            {mod.videoUrl && (
-                                <svg className="w-4 h-4 ml-auto flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
-                            )}
-                        </button>
-                    ))}
+        <div className="flex flex-col h-[calc(100vh-100px)] py-4">
+            {/* Header / Nav */}
+            <div className="mb-6 flex items-center gap-4">
+                <Link href="/student" className="p-2 rounded-full hover:bg-white/10 transition-colors text-neutral-400 hover:text-white">
+                    <ChevronLeft size={24} />
+                </Link>
+                <div>
+                    <h1 className="text-2xl font-bold text-white tracking-tight leading-none">{course.title}</h1>
+                    <p className="text-sm text-neutral-500 mt-1">By {course.mentor.email}</p>
                 </div>
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1 glass border border-[hsl(190,95%,50%)]/20 rounded-2xl p-8 overflow-y-auto elevated">
-                {activeModule ? (
-                    <div className="animate-fadeIn max-w-4xl mx-auto">
-                        <div className="mb-6 border-b border-[hsl(190,95%,50%)]/20 pb-4">
-                            <h1 className="text-3xl font-bold text-white font-display">{activeModule.title}</h1>
-                        </div>
-
-                        {/* Video Player */}
-                        <div className="aspect-video bg-gradient-to-br from-[hsl(190,95%,50%)]/10 to-[hsl(260,80%,60%)]/10 rounded-xl mb-8 flex items-center justify-center relative group overflow-hidden border border-[hsl(190,95%,50%)]/20">
-                            {videoId ? (
-                                <iframe
-                                    className="absolute inset-0 w-full h-full rounded-xl"
-                                    src={`https://www.youtube.com/embed/${videoId}`}
-                                    title={activeModule.title}
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                ></iframe>
-                            ) : activeModule.videoUrl ? (
-                                <div className="text-center z-10">
-                                    <div className="text-4xl mb-4">🎥</div>
-                                    <p className="text-gray-400 text-sm mb-2">Video URL provided</p>
-                                    <a
-                                        href={activeModule.videoUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-[hsl(190,95%,50%)] hover:underline text-sm"
-                                    >
-                                        Open Video Link
-                                    </a>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-[hsl(190,95%,50%)]/20 to-[hsl(260,80%,60%)]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-                                    <div className="text-center z-10">
-                                        <div className="w-20 h-20 bg-[hsl(190,95%,50%)]/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 mx-auto border border-[hsl(190,95%,50%)]/30 group-hover:scale-110 transition-transform duration-300 cursor-pointer hover:bg-[hsl(190,95%,50%)]/30 glow">
-                                            <svg className="w-8 h-8 text-[hsl(190,95%,50%)] ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                        </div>
-                                        <p className="text-gray-400 text-sm font-mono tracking-wider">NO VIDEO AVAILABLE</p>
+            <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
+                {/* Main Content: Video & Text */}
+                <div className="flex-1 flex flex-col min-h-0 overflow-y-auto pr-2">
+                    {activeModule ? (
+                        <div className="animate-fadeIn space-y-6">
+                            {/* Video Player */}
+                            <div className="aspect-video bg-black rounded-3xl overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 group">
+                                {videoId ? (
+                                    <iframe
+                                        className="absolute inset-0 w-full h-full"
+                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                        title={activeModule.title}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    ></iframe>
+                                ) : activeModule.videoUrl ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-900">
+                                        <Play size={48} className="text-neutral-700 mb-4" />
+                                        <p className="text-neutral-500 text-sm mb-4">Video available at external link</p>
+                                        <a
+                                            href={activeModule.videoUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-400 hover:text-blue-300 hover:underline"
+                                        >
+                                            Open Video
+                                        </a>
                                     </div>
-                                </>
-                            )}
-                        </div>
+                                ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-neutral-900 border border-white/5">
+                                        <FileText size={48} className="text-neutral-700 mb-4" />
+                                        <p className="text-neutral-500 text-sm font-medium tracking-wide">TEXT-ONLY LESSON</p>
+                                    </div>
+                                )}
+                            </div>
 
-                        {/* Text Content */}
-                        <div className="prose max-w-none">
-                            <h3 className="text-xl font-bold text-white mb-4 font-display">Lesson Notes</h3>
-                            <div className="glass p-6 rounded-xl border border-[hsl(190,95%,50%)]/20 text-gray-300 leading-relaxed whitespace-pre-wrap">
-                                {activeModule.content}
+                            {/* Content & Navigation */}
+                            <div className="space-y-6 pb-12">
+                                <div className="flex items-start justify-between">
+                                    <h2 className="text-3xl font-bold text-white tracking-tight">{activeModule.title}</h2>
+
+                                    {/* Nav Buttons */}
+                                    <div className="flex gap-2">
+                                        <GlassButton
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => {
+                                                const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
+                                                if (currentIndex > 0) {
+                                                    setActiveModule(course.modules[currentIndex - 1]);
+                                                }
+                                            }}
+                                            disabled={course.modules.findIndex(m => m.id === activeModule.id) === 0}
+                                        >
+                                            <ChevronLeft size={16} />
+                                            Prev
+                                        </GlassButton>
+                                        <GlassButton
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => {
+                                                const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
+                                                if (currentIndex < course.modules.length - 1) {
+                                                    setActiveModule(course.modules[currentIndex + 1]);
+                                                }
+                                            }}
+                                            disabled={course.modules.findIndex(m => m.id === activeModule.id) === course.modules.length - 1}
+                                        >
+                                            Next
+                                            <ChevronRight size={16} />
+                                        </GlassButton>
+                                    </div>
+                                </div>
+
+                                <GlassCard className="p-8 text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                                    {activeModule.content}
+                                </GlassCard>
                             </div>
                         </div>
-
-                        {/* Navigation Buttons */}
-                        <div className="flex justify-between mt-8 pt-6 border-t border-[hsl(190,95%,50%)]/20">
-                            <button
-                                onClick={() => {
-                                    const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
-                                    if (currentIndex > 0) {
-                                        setActiveModule(course.modules[currentIndex - 1]);
-                                    }
-                                }}
-                                disabled={course.modules.findIndex(m => m.id === activeModule.id) === 0}
-                                className="px-6 py-3 glass rounded-xl border border-[hsl(190,95%,50%)]/30 hover:bg-[hsl(190,95%,50%)]/10 hover:border-[hsl(190,95%,50%)]/50 text-[hsl(190,95%,50%)] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                                Previous Lesson
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    const currentIndex = course.modules.findIndex(m => m.id === activeModule.id);
-                                    if (currentIndex < course.modules.length - 1) {
-                                        setActiveModule(course.modules[currentIndex + 1]);
-                                    }
-                                }}
-                                disabled={course.modules.findIndex(m => m.id === activeModule.id) === course.modules.length - 1}
-                                className="px-6 py-3 bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white rounded-xl font-bold glow hover:scale-[1.02] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
-                            >
-                                Next Lesson
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-neutral-500">
+                            <Play size={48} className="mb-4 opacity-20" />
+                            <p>Select a module to begin</p>
                         </div>
+                    )}
+                </div>
+
+                {/* Sidebar: Module List (Playlist) */}
+                <div className="w-full lg:w-96 flex flex-col h-full bg-neutral-900/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+                    <div className="p-6 border-b border-white/5 bg-white/5 backdrop-blur-md">
+                        <h3 className="font-bold text-white">Course Content</h3>
+                        <p className="text-xs text-neutral-400 mt-1">{course.modules.length} Lessons • {course.modules.reduce((acc, m) => acc + (m.videoUrl ? 1 : 0), 0)} Videos</p>
                     </div>
-                ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                        <div className="text-6xl mb-6 opacity-30 animate-float">📺</div>
-                        <h2 className="text-2xl font-bold text-gray-300 font-display">Select a lesson to start learning</h2>
-                        <p className="text-sm mt-2 text-gray-400">Choose a module from the sidebar list</p>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        {course.modules.map((mod, idx) => {
+                            const isActive = activeModule?.id === mod.id;
+                            return (
+                                <button
+                                    key={mod.id}
+                                    onClick={() => setActiveModule(mod)}
+                                    className={`
+                                        w-full text-left p-4 rounded-2xl transition-all duration-200 flex items-center gap-4 group
+                                        ${isActive
+                                            ? 'bg-white text-black shadow-lg scale-[1.02]'
+                                            : 'bg-white/5 text-neutral-400 hover:bg-white/10 hover:text-white'}
+                                    `}
+                                >
+                                    <span className={`
+                                        flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold transition-colors
+                                        ${isActive ? 'bg-black text-white' : 'bg-white/10 text-neutral-500 group-hover:bg-white/20 group-hover:text-white'}
+                                    `}>
+                                        {idx + 1}
+                                    </span>
+
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-medium truncate ${isActive ? 'text-black' : 'text-neutral-300 group-hover:text-white'}`}>
+                                            {mod.title}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            {mod.videoUrl ? (
+                                                <span className={`text-[10px] flex items-center gap-1 ${isActive ? 'text-neutral-600' : 'text-neutral-500'}`}>
+                                                    <Play size={10} fill="currentColor" /> Video
+                                                </span>
+                                            ) : (
+                                                <span className={`text-[10px] flex items-center gap-1 ${isActive ? 'text-neutral-600' : 'text-neutral-500'}`}>
+                                                    <FileText size={10} /> Reading
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {isActive && <Play size={16} fill="currentColor" className="text-black" />}
+                                </button>
+                            );
+                        })}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

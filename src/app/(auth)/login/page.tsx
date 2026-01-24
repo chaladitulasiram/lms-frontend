@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Mail, Lock, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import api from '@/lib/axios';
+import { GlassCard } from '@/components/ui/glass/GlassCard';
+import { GlassButton } from '@/components/ui/glass/GlassButton';
 
 const APPLE_EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -28,7 +30,7 @@ const FormInput = memo(({
     required?: boolean;
 }) => (
     <div>
-        <label htmlFor={label.toLowerCase().replace(' ', '-')} className="block text-sm font-semibold text-neutral-300 mb-3">
+        <label htmlFor={label.toLowerCase().replace(' ', '-')} className="block text-sm font-semibold text-neutral-300 mb-2">
             {label}
         </label>
         <div className="relative">
@@ -38,7 +40,7 @@ const FormInput = memo(({
                 type={type}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[hsl(190,95%,50%)] focus:border-transparent transition-all backdrop-blur-xl"
+                className="w-full pl-12 pr-4 py-3 bg-neutral-900/50 border border-white/5 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-1 focus:ring-blue-500/50 focus:border-white/20 transition-all backdrop-blur-md"
                 placeholder={placeholder}
                 required={required}
                 aria-label={label}
@@ -106,9 +108,11 @@ export default function LoginPage() {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center bg-black p-4 overflow-hidden font-sans">
-            {/* Background Ambience - Consistent with Landing Page */}
+            <div className="bg-noise" />
+
+            {/* Background Ambience */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[120px]" />
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[120px]" />
                 <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]" />
             </div>
 
@@ -116,10 +120,10 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.8, ease: APPLE_EASE }}
-                className="w-full max-w-md relative z-10"
+                className="w-full max-w-sm relative z-10"
             >
                 {/* Card */}
-                <div className="bg-neutral-900/60 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
+                <GlassCard className="p-8">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <motion.div
@@ -147,7 +151,7 @@ export default function LoginPage() {
                                 transition={{ duration: 0.3, ease: APPLE_EASE }}
                                 className="mb-6"
                             >
-                                <div className="p-4 text-sm text-red-200 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-xl">
+                                <div className="p-4 text-sm text-red-200 bg-red-500/10 border border-red-400/20 rounded-xl backdrop-blur-xl">
                                     <div className="flex items-center gap-2">
                                         <AlertCircle className="w-5 h-5" aria-hidden="true" />
                                         {error}
@@ -178,22 +182,14 @@ export default function LoginPage() {
                             required
                         />
 
-                        <motion.button
+                        <GlassButton
                             type="submit"
                             disabled={loading}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="w-full py-4 bg-white text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            isLoading={loading}
+                            className="w-full py-3"
                         >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                                    Signing in...
-                                </span>
-                            ) : (
-                                'Sign In'
-                            )}
-                        </motion.button>
+                            Sign In
+                        </GlassButton>
                     </form>
 
                     <div className="mt-8 text-center">
@@ -204,7 +200,7 @@ export default function LoginPage() {
                             </Link>
                         </p>
                     </div>
-                </div>
+                </GlassCard>
 
                 {/* Back to Home */}
                 <div className="text-center mt-8">

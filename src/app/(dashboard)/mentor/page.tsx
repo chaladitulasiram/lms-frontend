@@ -6,6 +6,7 @@ import api from '@/lib/axios';
 import SuccessModal from '@/components/SuccessModal';
 import Link from 'next/link';
 import { Plus, BookOpen, Users, Star, Loader2, ArrowRight } from 'lucide-react';
+import { CinematicLoader } from '@/components/ui/CinematicLoader';
 
 interface Course {
     id: string;
@@ -79,16 +80,8 @@ export default function MentorDashboard() {
             </div>
 
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(6)].map((_, idx) => (
-                        <div key={idx} className="bg-neutral-900/40 p-6 rounded-2xl animate-pulse border border-white/5">
-                            <div className="h-32 bg-white/5 rounded-xl mb-4"></div>
-                            <div className="h-6 bg-white/5 rounded w-3/4 mb-3"></div>
-                            <div className="h-4 bg-white/5 rounded w-full mb-2"></div>
-                            <div className="h-4 bg-white/5 rounded w-5/6 mb-6"></div>
-                            <div className="h-10 bg-white/5 rounded-lg"></div>
-                        </div>
-                    ))}
+                <div className="flex justify-center py-20">
+                    <CinematicLoader text="Loading Your Courses..." />
                 </div>
             ) : courses?.length === 0 ? (
                 <div className="bg-neutral-900/40 p-16 rounded-2xl text-center border border-white/5">

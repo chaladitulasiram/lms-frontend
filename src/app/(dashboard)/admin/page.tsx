@@ -5,6 +5,10 @@ import api from '@/lib/axios';
 import { useState } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Users, BookOpen, TrendingUp, CheckCircle, BarChart3, PieChart as PieIcon, Sparkles } from 'lucide-react';
+import { PageHeader } from '@/components/ui/glass/PageHeader';
+import { GlassCard } from '@/components/ui/glass/GlassCard';
+import { GlassButton } from '@/components/ui/glass/GlassButton';
+import { CinematicLoader } from '@/components/ui/CinematicLoader';
 
 interface Stats {
     totalStudents: number;
@@ -84,22 +88,18 @@ export default function AdminDashboard() {
     ] : [];
 
     return (
-        <div className="min-h-screen">
-            {/* Header */}
-            <div className="mb-10">
-                <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Platform Analytics</h1>
-                <p className="text-neutral-400">Monitor your platform's performance in real-time</p>
-            </div>
+        <div className="min-h-screen pb-20">
+            <PageHeader
+                title="Platform Analytics"
+                description="Monitor your platform's performance in real-time"
+            />
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {statsLoading ? (
-                    [...Array(4)].map((_, idx) => (
-                        <div key={idx} className="bg-neutral-900/40 p-6 rounded-2xl animate-pulse border border-white/5">
-                            <div className="h-4 bg-white/5 rounded w-1/2 mb-4"></div>
-                            <div className="h-8 bg-white/5 rounded w-3/4"></div>
-                        </div>
-                    ))
+                    <div className="col-span-full flex justify-center py-20">
+                        <CinematicLoader text="Analyzing Platform Data..." />
+                    </div>
                 ) : (
                     <>
                         <StatCard
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
             {/* Charts Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                 {/* User Growth Chart */}
-                <div className="bg-neutral-900/40 p-8 rounded-2xl border border-white/10 backdrop-blur-xl">
+                <GlassCard className="p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <BarChart3 className="text-blue-400" size={20} />
                         <h3 className="font-bold text-lg text-white">User Growth Trends</h3>
@@ -169,10 +169,10 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     )}
-                </div>
+                </GlassCard>
 
                 {/* Completion Rate Pie Chart */}
-                <div className="bg-neutral-900/40 p-8 rounded-2xl border border-white/10 backdrop-blur-xl">
+                <GlassCard className="p-8">
                     <div className="flex items-center gap-3 mb-6">
                         <PieIcon className="text-purple-400" size={20} />
                         <h3 className="font-bold text-lg text-white">Course Completion</h3>
@@ -209,12 +209,12 @@ export default function AdminDashboard() {
                             </PieChart>
                         </ResponsiveContainer>
                     )}
-                </div>
+                </GlassCard>
             </div>
 
             {/* Course Performance Bar Chart */}
             {analytics?.courseStats && analytics.courseStats.length > 0 && (
-                <div className="bg-neutral-900/40 p-8 rounded-2xl border border-white/10 backdrop-blur-xl mb-8">
+                <GlassCard className="p-8 mb-8">
                     <div className="flex items-center gap-3 mb-6">
                         <BarChart3 className="text-green-400" size={20} />
                         <h3 className="font-bold text-lg text-white">Top Courses by Enrollment</h3>
@@ -236,11 +236,11 @@ export default function AdminDashboard() {
                             <Bar dataKey="enrollments" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
-                </div>
+                </GlassCard>
             )}
 
             {/* AI Insights Panel */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-black to-neutral-900 p-8 rounded-2xl border border-white/10 group">
+            <div className="relative overflow-hidden bg-gradient-to-br from-neutral-900 via-black to-neutral-900 p-8 rounded-3xl border border-white/10 group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
 
                 <div className="relative z-10">
@@ -274,12 +274,12 @@ export default function AdminDashboard() {
                                 <p className="text-xs text-red-400 mt-2">Please ensure the AI service is available.</p>
                             </div>
                         ) : aiInsights ? (
-                            <div className="bg-white/5 p-6 rounded-xl border border-white/10 backdrop-blur-sm">
+                            <GlassCard className="p-6">
                                 <div className="flex gap-4">
                                     <span className="text-2xl pt-1">💡</span>
                                     <div className="text-neutral-300 leading-relaxed whitespace-pre-wrap text-sm">{aiInsights}</div>
                                 </div>
-                            </div>
+                            </GlassCard>
                         ) : (
                             <div className="bg-white/5 p-8 rounded-xl text-center border border-white/5 border-dashed">
                                 <Sparkles className="mx-auto mb-3 text-neutral-500" size={32} />
@@ -289,23 +289,15 @@ export default function AdminDashboard() {
                         )}
                     </div>
 
-                    <button
+                    <GlassButton
                         onClick={() => aiMutation.mutate()}
                         disabled={aiMutation.isPending || !stats}
-                        className="w-full bg-white text-black py-4 rounded-xl font-bold hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        variant="primary"
+                        className="w-full py-4 text-base"
                     >
-                        {aiMutation.isPending ? (
-                            <>
-                                <div className="animate-spin rounded-full h-5 w-5 border-2 border-neutral-400 border-t-black"></div>
-                                Processing...
-                            </>
-                        ) : (
-                            <>
-                                Generate AI Analysis
-                                <Sparkles size={18} />
-                            </>
-                        )}
-                    </button>
+                        {aiMutation.isPending ? 'Processing...' : 'Generate AI Analysis'}
+                        {!aiMutation.isPending && <Sparkles size={18} />}
+                    </GlassButton>
                 </div>
             </div>
         </div>
@@ -315,15 +307,15 @@ export default function AdminDashboard() {
 // Stat Card Component
 function StatCard({ title, value, icon, trend }: { title: string; value: number | string; icon: React.ReactNode; trend: string }) {
     return (
-        <div className="bg-neutral-900/40 p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-colors group">
+        <GlassCard className="p-6 group hover:border-white/20 transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-neutral-400 text-sm font-medium uppercase tracking-wide">{title}</h3>
                 <div className="opacity-70 group-hover:opacity-100 transition-opacity bg-white/5 p-2 rounded-lg">{icon}</div>
             </div>
-            <p className="text-3xl font-bold text-white mb-2">{value}</p>
+            <p className="text-3xl font-bold text-white mb-2 tracking-tight">{value}</p>
             <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                 <span className="text-green-400 font-medium">↑ {trend}</span>
             </div>
-        </div>
+        </GlassCard>
     );
 }
