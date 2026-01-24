@@ -1,29 +1,81 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback, memo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Mail, Lock, ArrowLeft, Loader2, AlertCircle } from 'lucide-react';
 import api from '@/lib/axios';
+
+const APPLE_EASE = [0.16, 1, 0.3, 1] as const;
+
+// Memoized Input Component
+const FormInput = memo(({
+    icon: Icon,
+    label,
+    type = 'text',
+    value,
+    onChange,
+    placeholder,
+    required = false
+}: {
+    icon: any;
+    label: string;
+    type?: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    required?: boolean;
+}) => (
+    <div>
+        <label htmlFor={label.toLowerCase().replace(' ', '-')} className="block text-sm font-semibold text-neutral-300 mb-3">
+            {label}
+        </label>
+        <div className="relative">
+            <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" aria-hidden="true" />
+            <input
+                id={label.toLowerCase().replace(' ', '-')}
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-[hsl(190,95%,50%)] focus:border-transparent transition-all backdrop-blur-xl"
+                placeholder={placeholder}
+                required={required}
+                aria-label={label}
+            />
+        </div>
+    </div>
+));
+FormInput.displayName = 'FormInput';
 
 export default function LoginPage() {
     const router = useRouter();
+    const shouldReduceMotion = useReducedMotion();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [particles, setParticles] = useState<Array<{ left: string; duration: string; delay: string }>>([]);
 
+    // Redirect if already logged in
     useEffect(() => {
-        // Generate particles on client-side only to avoid hydration mismatch
-        const particleData = Array.from({ length: 10 }, () => ({
-            left: `${Math.random() * 100}%`,
-            duration: `${Math.random() * 8 + 12}s`,
-            delay: `${Math.random() * 5}s`,
-        }));
-        setParticles(particleData);
-    }, []);
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
 
-    const handleLogin = async (e: React.FormEvent) => {
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.role === 'ADMIN') router.push('/admin');
+                else if (user.role === 'MENTOR') router.push('/mentor');
+                else if (user.role === 'STUDENT') router.push('/student');
+                else router.push('/');
+            } catch (e) {
+                // Invalid user data, continue to login
+            }
+        }
+    }, [router]);
+
+    const handleLogin = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
@@ -50,119 +102,118 @@ export default function LoginPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [email, password, router]);
 
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-[hsl(222,47%,6%)] p-4 overflow-hidden">
-            {/* Cyber Grid Background */}
-            <div className="absolute inset-0 cyber-grid opacity-20"></div>
-
-            {/* Gradient Overlays */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[hsl(190,95%,50%)] opacity-20 blur-[120px] rounded-full"></div>
-                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[hsl(260,80%,60%)] opacity-20 blur-[120px] rounded-full"></div>
+        <div className="relative min-h-screen flex items-center justify-center bg-black p-4 overflow-hidden font-sans">
+            {/* Background Ambience - Consistent with Landing Page */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-500/10 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-purple-500/5 rounded-full blur-[100px]" />
             </div>
 
-            {/* Floating Particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {particles.map((particle, i) => (
-                    <div
-                        key={i}
-                        className="particle animate-particle"
-                        style={{
-                            left: particle.left,
-                            animationDuration: particle.duration,
-                            animationDelay: particle.delay,
-                            bottom: '-10px'
-                        }}
-                    ></div>
-                ))}
-            </div>
-
-            <div className="w-full max-w-md relative z-10">
+            <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.8, ease: APPLE_EASE }}
+                className="w-full max-w-md relative z-10"
+            >
                 {/* Card */}
-                <div className="glass-dark p-10 rounded-3xl border border-[hsl(190,95%,50%)]/30 elevated">
+                <div className="bg-neutral-900/60 backdrop-blur-xl border border-white/10 p-10 rounded-3xl shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center gap-3 mb-4">
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-[hsl(190,95%,50%)] blur-lg opacity-50 rounded-full"></div>
-                                <div className="relative text-4xl glow-text">⚡</div>
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, ease: APPLE_EASE, delay: 0.2 }}
+                            className="inline-flex items-center gap-3 mb-4"
+                        >
+                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                                <span className="text-black text-xs font-bold">L</span>
                             </div>
-                            <h1 className="text-3xl font-bold gradient-text font-display">EduTech LMS</h1>
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-2 font-display">Welcome Back</h2>
-                        <p className="text-gray-400">Sign in to continue your learning journey</p>
+                            <h1 className="text-xl font-bold text-white tracking-tight">LMS Pro</h1>
+                        </motion.div>
+                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Welcome Back</h2>
+                        <p className="text-neutral-400">Sign in to continue your learning journey</p>
                     </div>
 
-                    {error && (
-                        <div className="p-4 mb-6 text-sm text-red-200 bg-red-500/20 border border-red-400/30 rounded-xl animate-fadeIn glass">
-                            <div className="flex items-center gap-2">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {error}
-                            </div>
-                        </div>
-                    )}
+                    {/* Error Message */}
+                    <AnimatePresence>
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3, ease: APPLE_EASE }}
+                                className="mb-6"
+                            >
+                                <div className="p-4 text-sm text-red-200 bg-red-500/20 border border-red-400/30 rounded-xl backdrop-blur-xl">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5" aria-hidden="true" />
+                                        {error}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <form onSubmit={handleLogin} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-3">Email Address</label>
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 glass border border-[hsl(190,95%,50%)]/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[hsl(190,95%,50%)] focus:border-transparent transition-smooth bg-black/20"
-                                placeholder="you@example.com"
-                                required
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-300 mb-3">Password</label>
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 glass border border-[hsl(190,95%,50%)]/30 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[hsl(190,95%,50%)] focus:border-transparent transition-smooth bg-black/20"
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
-                        <button
+                        <FormInput
+                            icon={Mail}
+                            label="Email Address"
+                            type="email"
+                            value={email}
+                            onChange={setEmail}
+                            placeholder="you@example.com"
+                            required
+                        />
+
+                        <FormInput
+                            icon={Lock}
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={setPassword}
+                            placeholder="••••••••"
+                            required
+                        />
+
+                        <motion.button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 bg-gradient-to-r from-[hsl(190,95%,50%)] to-[hsl(260,80%,60%)] text-white rounded-xl font-bold glow hover:scale-[1.02] transition-cyber disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            className="w-full py-4 bg-white text-black rounded-xl font-bold hover:bg-neutral-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
-                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                                    <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                                     Signing in...
                                 </span>
                             ) : (
                                 'Sign In'
                             )}
-                        </button>
+                        </motion.button>
                     </form>
 
-                    <p className="mt-8 text-center text-sm text-gray-400">
-                        Don't have an account?{' '}
-                        <Link href="/register" className="text-[hsl(190,95%,50%)] hover:text-[hsl(260,80%,60%)] font-semibold hover:underline transition-smooth">
-                            Create one
-                        </Link>
-                    </p>
+                    <div className="mt-8 text-center">
+                        <p className="text-sm text-neutral-400">
+                            Don't have an account?{' '}
+                            <Link href="/register" className="text-blue-400 hover:text-blue-300 transition-colors font-medium">
+                                Create one
+                            </Link>
+                        </p>
+                    </div>
                 </div>
 
                 {/* Back to Home */}
-                <div className="text-center mt-6">
-                    <Link href="/" className="text-sm text-gray-400 hover:text-[hsl(190,95%,50%)] transition-smooth inline-flex items-center gap-2 group">
-                        <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
+                <div className="text-center mt-8">
+                    <Link href="/" className="text-sm text-neutral-500 hover:text-white transition-colors inline-flex items-center gap-2 group">
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" aria-hidden="true" />
                         Back to Home
                     </Link>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 }

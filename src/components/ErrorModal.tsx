@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, X } from 'lucide-react';
 
 interface ErrorModalProps {
     isOpen: boolean;
@@ -12,6 +14,8 @@ interface ErrorModalProps {
     autoCloseDelay?: number;
 }
 
+const APPLE_EASE = [0.16, 1, 0.3, 1];
+
 export default function ErrorModal({
     isOpen,
     onClose,
@@ -21,115 +25,87 @@ export default function ErrorModal({
     autoClose = false,
     autoCloseDelay = 3000
 }: ErrorModalProps) {
-    const [particles, setParticles] = useState<Array<{ left: string; delay: string }>>([]);
+    const [particles, setParticles] = useState<Array<{ left: string; delay: number }>>([]);
 
     useEffect(() => {
         if (isOpen) {
             // Generate warning particles
-            const particleData = Array.from({ length: 20 }, () => ({
+            const particleData = Array.from({ length: 15 }, () => ({
                 left: `${Math.random() * 100}%`,
-                delay: `${Math.random() * 0.5}s`,
+                delay: Math.random() * 0.5,
             }));
             setParticles(particleData);
 
-            // Auto close if enabled
             if (autoClose) {
-                const timer = setTimeout(() => {
-                    onClose();
-                }, autoCloseDelay);
+                const timer = setTimeout(onClose, autoCloseDelay);
                 return () => clearTimeout(timer);
             }
         }
     }, [isOpen, autoClose, autoCloseDelay, onClose]);
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fadeIn">
-            {/* Backdrop */}
-            <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-md"
-                onClick={onClose}
-            />
-
-            {/* Warning Particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {particles.map((particle, i) => (
-                    <div
-                        key={i}
-                        className="absolute w-2 h-2 rounded-full bg-gradient-to-r from-red-500 to-orange-500 animate-confetti opacity-60"
-                        style={{
-                            left: particle.left,
-                            animationDelay: particle.delay,
-                            top: '-20px'
-                        }}
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.4, ease: APPLE_EASE }}
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                        onClick={onClose}
                     />
-                ))}
-            </div>
 
-            {/* Modal Content */}
-            <div className="relative z-10 w-full max-w-md animate-scaleIn">
-                <div className="glass-dark rounded-3xl border-2 border-red-500/50 overflow-hidden elevated">
-                    {/* Animated Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-orange-500/20 to-yellow-500/20 opacity-50" />
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-red-500/20 rounded-full blur-3xl animate-pulse-slow" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
-
-                    {/* Content */}
-                    <div className="relative z-10 p-8 text-center">
-                        {/* Icon */}
-                        <div className="mb-6 relative">
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-24 h-24 bg-gradient-to-br from-red-500 to-orange-500 rounded-full blur-2xl opacity-50 animate-pulse-slow" />
-                            </div>
-                            <div className="relative text-7xl animate-bounce-slow glow-text">
-                                {icon}
-                            </div>
-                        </div>
-
-                        {/* Title */}
-                        <h2 className="text-3xl font-bold text-white mb-3 font-display">
-                            <span className="bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
-                                {title}
-                            </span>
-                        </h2>
-
-                        {/* Message */}
-                        <p className="text-gray-300 text-lg mb-8 leading-relaxed">
-                            {message}
-                        </p>
-
-                        {/* Error Indicator */}
-                        <div className="flex items-center justify-center gap-2 mb-6">
-                            <div className="flex gap-1">
-                                {[...Array(3)].map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="w-2 h-2 rounded-full bg-red-500 animate-pulse"
-                                        style={{ animationDelay: `${i * 200}ms` }}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Close Button */}
-                        <button
-                            onClick={onClose}
-                            className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white py-4 rounded-xl font-bold hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group relative overflow-hidden"
-                        >
-                            {/* Button Shine Effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
-
-                            <span className="relative flex items-center justify-center gap-2">
-                                Understood
-                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                            </span>
-                        </button>
+                    {/* Warning Particles */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        {particles.map((particle, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ y: -20, opacity: 1 }}
+                                animate={{ y: "100vh", opacity: 0 }}
+                                transition={{ duration: 2.5, delay: particle.delay, ease: "easeOut" }}
+                                className="absolute w-2 h-2 rounded-full bg-red-500/50"
+                                style={{ left: particle.left }}
+                            />
+                        ))}
                     </div>
+
+                    {/* Modal Content */}
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                        transition={{ duration: 0.4, ease: APPLE_EASE }}
+                        className="relative z-10 w-full max-w-sm bg-neutral-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl"
+                    >
+                        {/* Ambient Glow */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-[50px] rounded-full" />
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-500/10 blur-[50px] rounded-full" />
+
+                        <div className="relative z-10 p-8 text-center">
+                            <div className="w-16 h-16 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6 text-4xl border border-white/10 shadow-inner">
+                                <AlertTriangle className="w-8 h-8 text-red-400" />
+                            </div>
+
+                            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">
+                                {title}
+                            </h2>
+
+                            <p className="text-neutral-400 text-sm leading-relaxed mb-8">
+                                {message}
+                            </p>
+
+                            <button
+                                onClick={onClose}
+                                className="w-full bg-white text-black py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-colors shadow-lg shadow-white/5 active:scale-[0.98]"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </motion.div>
                 </div>
-            </div>
-        </div>
+            )}
+        </AnimatePresence>
     );
 }
